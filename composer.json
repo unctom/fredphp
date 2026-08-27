@@ -1,0 +1,46 @@
+{
+    "name": "africore-dev/fred-php",
+    "description": "A fred sdk to perform .tz domain actions on your new hosting website. You need to be a registered domain registrar or reseller.",
+    "type": "library",
+    "require": {
+        "php": "^8.3",
+        "ext-openssl": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.3",
+        "phpstan/phpstan": "^2.2",
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "pestphp/pest": "^5.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "AfricoreDev\\FredPhp\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "unctom",
+            "email": "bs.thomas@hotmail.com",
+            "homepage": "https://fred.umojasolutions.co.tz"
+        }
+    ],
+    "minimum-stability": "stable",
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "./vendor/bin/pest",
+        "analyse": "./vendor/bin/phpstan analyse src --level=8",
+        "format": "./vendor/bin/php-cs-fixer fix"
+    }
+}
