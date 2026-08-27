@@ -1,6 +1,6 @@
 # FRED PHP SDK (`africore-dev/fred-php`)
 
-A pure PHP SDK for managing `.tz` domain names, contacts, nameservers (NSSets), DNSSEC (KeySets), and registrar accounts on registries running the **FRED** (*Free Registry ENUM Domain*) registry platform via EPP (*Extensible Provisioning Protocol*).
+A PHP SDK for managing `.tz` domain names, contacts, nameservers (NSSets), DNSSEC (KeySets), and registrar accounts on registries running the **FRED** (*Free Registry ENUM Domain*) registry platform via EPP (*Extensible Provisioning Protocol*).
 
 ---
 
@@ -14,7 +14,7 @@ A pure PHP SDK for managing `.tz` domain names, contacts, nameservers (NSSets), 
 ## Installation
 
 ```bash
-composer require africore-dev/fred-php
+composer require africore-dev/fred-php:dev-main
 ```
 
 ---
