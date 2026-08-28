@@ -150,6 +150,72 @@ final class EppXmlParser
     }
 
     /**
+     * Extracts supported services (objURI and extURI) from a parsed EPP greeting.
+     *
+     * @param array<string, mixed> $parsed
+     * @return array{
+     *     version?: string,
+     *     lang?: string,
+     *     objURIs: array<string>,
+     *     extURIs: array<string>,
+     * }
+     */
+    public function getGreetingServices(array $parsed): array
+    {
+        $svcMenu = $parsed['epp']['greeting']['svcMenu'] ?? [];
+        if (! is_array($svcMenu)) {
+            return [
+                'objURIs' => [],
+                'extURIs' => [],
+            ];
+        }
+
+        $objURIs = [];
+        if (isset($svcMenu['objURI'])) {
+            $objs = is_array($svcMenu['objURI']) && ! isset($svcMenu['objURI']['@value'])
+                ? $svcMenu['objURI']
+                : [$svcMenu['objURI']];
+            foreach ($objs as $obj) {
+                $val = is_array($obj) ? ($obj['@value'] ?? null) : $obj;
+                if (is_string($val) && $val !== '') {
+                    $objURIs[] = $val;
+                }
+            }
+        }
+
+        $extURIs = [];
+        $svcExtension = $svcMenu['svcExtension'] ?? null;
+        if (is_array($svcExtension) && isset($svcExtension['extURI'])) {
+            $exts = is_array($svcExtension['extURI']) && ! isset($svcExtension['extURI']['@value'])
+                ? $svcExtension['extURI']
+                : [$svcExtension['extURI']];
+            foreach ($exts as $ext) {
+                $val = is_array($ext) ? ($ext['@value'] ?? null) : $ext;
+                if (is_string($val) && $val !== '') {
+                    $extURIs[] = $val;
+                }
+            }
+        }
+
+        $version = $svcMenu['version'] ?? '1.0';
+        if (is_array($version)) {
+            $version = (string) ($version['@value'] ?? $version[0] ?? '1.0');
+        }
+
+        $lang = $svcMenu['lang'] ?? 'en';
+        if (is_array($lang)) {
+            $lang = (string) ($lang['@value'] ?? $lang[0] ?? 'en');
+        }
+
+        return [
+            'version' => (string) $version,
+            'lang' => (string) $lang,
+            'objURIs' => $objURIs,
+            'extURIs' => $extURIs,
+        ];
+    }
+
+    /**
      * @return array<int|string, mixed>|string
      */
     protected function xmlToArray(

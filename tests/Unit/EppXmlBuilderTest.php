@@ -7,13 +7,15 @@ beforeEach(function () {
 });
 
 test('loginCommand generates correct XML structure with FRED namespaces', function () {
-    $xml = $this->builder->loginCommand('REG-USER', 'SECRET_PASS', 'LGN-1234');
+    $xml = $this->builder->loginCommand('REG-USER', 'SECRET_PASS', clTRID: 'LGN-1234');
 
     expect($xml)->toContain('<clID>REG-USER</clID>')
         ->and($xml)->toContain('<pw>SECRET_PASS</pw>')
         ->and($xml)->toContain('urn:ietf:params:xml:ns:epp-1.0')
         ->and($xml)->toContain('http://www.nic.cz/xml/epp/domain-1.4')
-        ->and($xml)->toContain('http://www.nic.cz/xml/epp/fred-1.5')
+        ->and($xml)->toContain('http://www.nic.cz/xml/epp/contact-1.6')
+        ->and($xml)->toContain('http://www.nic.cz/xml/epp/enumval-1.2')
+        ->and($xml)->not->toContain('http://www.nic.cz/xml/epp/fred-1.5')
         ->and($xml)->toContain('<clTRID>LGN-1234</clTRID>');
 });
 

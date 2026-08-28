@@ -51,13 +51,24 @@ final class Fred
     }
 
     /**
+     * @param array<string>|null $objURIs
+     * @param array<string>|null $extURIs
      * @return array<string, mixed>
      */
     public function login(
         ?string $username = null,
         ?string $password = null,
+        ?string $newPassword = null,
+        ?array $objURIs = null,
+        ?array $extURIs = null,
     ): array {
-        return $this->client->login($username, $password);
+        return $this->client->login(
+            username: $username,
+            password: $password,
+            newPassword: $newPassword,
+            objURIs: $objURIs,
+            extURIs: $extURIs,
+        );
     }
 
     public function send(string $xml): string

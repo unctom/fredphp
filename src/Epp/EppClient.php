@@ -55,10 +55,17 @@ class EppClient
     }
 
     /**
+     * @param array<string>|null $objURIs
+     * @param array<string>|null $extURIs
      * @return array<string, mixed>
      */
-    public function login(?string $username = null, ?string $password = null): array
-    {
+    public function login(
+        ?string $username = null,
+        ?string $password = null,
+        ?string $newPassword = null,
+        ?array $objURIs = null,
+        ?array $extURIs = null,
+    ): array {
         $user = $username ?? $this->config?->username;
         $pass = $password ?? $this->config?->password;
 
@@ -66,7 +73,43 @@ class EppClient
             throw new EppAuthenticationException('Cannot login to EPP: username or password is not provided.');
         }
 
-        $xml = $this->xmlBuilder->loginCommand($user, $pass);
+        // If greeting was captured and services not explicitly provided, extract announced services
+        $activeObjURIs = $objURIs;
+        $activeExtURIs = $extURIs;
+        $version = '1.0';
+        $lang = 'en';
+
+        if ($activeObjURIs === null && $this->lastGreeting !== null && trim($this->lastGreeting) !== '') {
+            try {
+                $parsedGreeting = $this->xmlParser->parse($this->lastGreeting);
+                $discovered = $this->xmlParser->getGreetingServices($parsedGreeting);
+                if (! empty($discovered['objURIs'])) {
+                    $activeObjURIs = $discovered['objURIs'];
+                }
+                if (! empty($discovered['extURIs'])) {
+                    $activeExtURIs = $discovered['extURIs'];
+                }
+                if (! empty($discovered['version'])) {
+                    $version = $discovered['version'];
+                }
+                if (! empty($discovered['lang'])) {
+                    $lang = $discovered['lang'];
+                }
+            } catch (Throwable) {
+                // Fallback to FRED defaults if greeting parsing fails
+            }
+        }
+
+        $xml = $this->xmlBuilder->loginCommand(
+            clID: $user,
+            password: $pass,
+            newPassword: $newPassword,
+            version: $version,
+            lang: $lang,
+            objURIs: $activeObjURIs,
+            extURIs: $activeExtURIs,
+        );
+
         $response = $this->send($xml);
         $parsed = $this->xmlParser->parse($response);
         $this->lastParsedResponse = $parsed;

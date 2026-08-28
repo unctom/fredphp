@@ -27,10 +27,12 @@ final class EppXmlBuilder
 
     /**
      * @param array<string, mixed> $data
+     * @param array<string, string>|null $customNamespaces
      */
     public function build(
         array $data,
         string $rootElement = 'epp',
+        ?array $customNamespaces = null,
     ): string {
         // Auto-inject clTRID if not explicitly provided
         if (isset($data['command']) && is_array($data['command']) && ! isset($data['command']['clTRID'])) {
@@ -53,7 +55,9 @@ final class EppXmlBuilder
             $rootElement,
         );
 
-        foreach (self::NAMESPACES as $name => $value) {
+        $namespaces = $customNamespaces ?? self::NAMESPACES;
+
+        foreach ($namespaces as $name => $value) {
             $root->setAttributeNS(
                 'http://www.w3.org/2000/xmlns/',
                 $name,
@@ -87,40 +91,73 @@ final class EppXmlBuilder
     // Session & System Commands
     // ==========================================
 
+    /**
+     * @param array<string>|null $objURIs
+     * @param array<string>|null $extURIs
+     */
     public function loginCommand(
         string $clID,
         string $password,
+        ?string $newPassword = null,
+        ?string $version = '1.0',
+        ?string $lang = 'en',
+        ?array $objURIs = null,
+        ?array $extURIs = null,
         ?string $clTRID = null,
     ): string {
+        $defaultObjURIs = [
+            'http://www.nic.cz/xml/epp/contact-1.6',
+            'http://www.nic.cz/xml/epp/nsset-1.2',
+            'http://www.nic.cz/xml/epp/domain-1.4',
+            'http://www.nic.cz/xml/epp/keyset-1.3',
+        ];
+
+        $defaultExtURIs = [
+            'http://www.nic.cz/xml/epp/enumval-1.2',
+        ];
+
+        $activeObjURIs = ! empty($objURIs) ? array_values(array_unique($objURIs)) : $defaultObjURIs;
+        $activeExtURIs = $extURIs !== null ? array_values(array_unique($extURIs)) : $defaultExtURIs;
+
+        // Filter out fred-1.5 from extURI if accidentally passed, as fred-1.5 is NOT a valid extURI in FRED
+        $activeExtURIs = array_values(array_filter($activeExtURIs, fn ($uri) => $uri !== 'http://www.nic.cz/xml/epp/fred-1.5'));
+
+        $loginPayload = [
+            'clID' => $clID,
+            'pw' => $password,
+        ];
+
+        if ($newPassword !== null && $newPassword !== '') {
+            $loginPayload['newPW'] = $newPassword;
+        }
+
+        $loginPayload['options'] = [
+            'version' => $version ?? '1.0',
+            'lang' => $lang ?? 'en',
+        ];
+
+        $svcs = [
+            'objURI' => $activeObjURIs,
+        ];
+
+        if (! empty($activeExtURIs)) {
+            $svcs['svcExtension'] = [
+                'extURI' => $activeExtURIs,
+            ];
+        }
+
+        $loginPayload['svcs'] = $svcs;
+
         $loginData = [
             'command' => [
-                'login' => [
-                    'clID' => $clID,
-                    'pw' => $password,
-                    'options' => [
-                        'version' => '1.0',
-                        'lang' => 'en',
-                    ],
-                    'svcs' => [
-                        'objURI' => [
-                            'http://www.nic.cz/xml/epp/domain-1.4',
-                            'http://www.nic.cz/xml/epp/contact-1.6',
-                            'http://www.nic.cz/xml/epp/nsset-1.2',
-                            'http://www.nic.cz/xml/epp/keyset-1.3',
-                        ],
-                        'svcExtension' => [
-                            'extURI' => [
-                                'http://www.nic.cz/xml/epp/fred-1.5',
-                                'http://www.nic.cz/xml/epp/enumval-1.2',
-                            ],
-                        ],
-                    ],
-                ],
+                'login' => $loginPayload,
                 'clTRID' => $clTRID ?? $this->generateTrid('LGN'),
             ],
         ];
 
-        return $this->build($loginData);
+        return $this->build($loginData, 'epp', [
+            'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
+        ]);
     }
 
     public function logoutCommand(?string $clTRID = null): string
@@ -130,6 +167,8 @@ final class EppXmlBuilder
                 'logout' => [],
                 'clTRID' => $clTRID ?? $this->generateTrid('LGO'),
             ],
+        ], 'epp', [
+            'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
         ]);
     }
 
@@ -137,6 +176,8 @@ final class EppXmlBuilder
     {
         return $this->build([
             'hello' => [],
+        ], 'epp', [
+            'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
         ]);
     }
 
@@ -145,10 +186,14 @@ final class EppXmlBuilder
         return $this->build([
             'command' => [
                 'poll' => [
-                    '_attributes' => ['op' => 'req'],
+                    '@attributes' => [
+                        'op' => 'req',
+                    ],
                 ],
                 'clTRID' => $clTRID ?? $this->generateTrid('POL'),
             ],
+        ], 'epp', [
+            'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
         ]);
     }
 
@@ -157,10 +202,15 @@ final class EppXmlBuilder
         return $this->build([
             'command' => [
                 'poll' => [
-                    '_attributes' => ['op' => 'ack', 'msgID' => $msgId],
+                    '@attributes' => [
+                        'op' => 'ack',
+                        'msgID' => $msgId,
+                    ],
                 ],
-                'clTRID' => $clTRID ?? $this->generateTrid('ACK'),
+                'clTRID' => $clTRID ?? $this->generateTrid('POL'),
             ],
+        ], 'epp', [
+            'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
         ]);
     }
 

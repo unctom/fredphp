@@ -75,3 +75,33 @@ test('parse correctly extracts resData for domain check and info', function () {
     expect($resData)->toBeArray()
         ->and(isset($resData['chkData']['cd']))->toBeTrue();
 });
+
+test('getGreetingServices parses objURIs and extURIs from greeting frame', function () {
+    $greetingXml = '<?xml version="1.0" encoding="UTF-8"?>
+    <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+      <greeting>
+        <svID>tzNIC</svID>
+        <svDate>2026-08-28T18:00:00Z</svDate>
+        <svcMenu>
+          <version>1.0</version>
+          <lang>en</lang>
+          <objURI>http://www.nic.cz/xml/epp/contact-1.6</objURI>
+          <objURI>http://www.nic.cz/xml/epp/domain-1.4</objURI>
+          <objURI>http://www.nic.cz/xml/epp/nsset-1.2</objURI>
+          <objURI>http://www.nic.cz/xml/epp/keyset-1.3</objURI>
+          <svcExtension>
+            <extURI>http://www.nic.cz/xml/epp/enumval-1.2</extURI>
+          </svcExtension>
+        </svcMenu>
+      </greeting>
+    </epp>';
+
+    $parsed = $this->parser->parse($greetingXml);
+    $services = $this->parser->getGreetingServices($parsed);
+
+    expect($services['version'])->toBe('1.0')
+        ->and($services['lang'])->toBe('en')
+        ->and($services['objURIs'])->toContain('http://www.nic.cz/xml/epp/contact-1.6')
+        ->and($services['objURIs'])->toContain('http://www.nic.cz/xml/epp/domain-1.4')
+        ->and($services['extURIs'])->toBe(['http://www.nic.cz/xml/epp/enumval-1.2']);
+});
