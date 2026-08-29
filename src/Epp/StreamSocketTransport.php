@@ -22,12 +22,6 @@ class StreamSocketTransport implements EppTransport
 
     protected int $timeout;
 
-    protected bool $verifyPeer;
-
-    protected bool $verifyPeerName;
-
-    protected bool $allowSelfSigned;
-
     public function __construct(
         string $host,
         int $port = 700,
@@ -35,9 +29,6 @@ class StreamSocketTransport implements EppTransport
         ?string $privateKey = null,
         ?string $passphrase = null,
         int $timeout = 30,
-        bool $verifyPeer = false,
-        bool $verifyPeerName = false,
-        bool $allowSelfSigned = true,
     ) {
         $this->host = $host;
         $this->port = $port;
@@ -45,9 +36,6 @@ class StreamSocketTransport implements EppTransport
         $this->privateKey = $privateKey;
         $this->passphrase = $passphrase;
         $this->timeout = $timeout;
-        $this->verifyPeer = $verifyPeer;
-        $this->verifyPeerName = $verifyPeerName;
-        $this->allowSelfSigned = $allowSelfSigned;
     }
 
     public static function fromConfig(FredConfig $config): self
@@ -59,18 +47,15 @@ class StreamSocketTransport implements EppTransport
             privateKey: $config->privateKey,
             passphrase: $config->passphrase,
             timeout: $config->timeout,
-            verifyPeer: $config->verifyPeer,
-            verifyPeerName: $config->verifyPeerName,
-            allowSelfSigned: $config->allowSelfSigned,
         );
     }
 
     public function connect(): void
     {
         $sslOptions = [
-            'verify_peer' => $this->verifyPeer,
-            'verify_peer_name' => $this->verifyPeerName,
-            'allow_self_signed' => $this->allowSelfSigned,
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true,
         ];
 
         if ($this->certificate !== null) {

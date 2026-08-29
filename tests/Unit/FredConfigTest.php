@@ -13,10 +13,7 @@ test('FredConfig can be instantiated with default values', function () {
         ->and($config->username)->toBe('REG-USER')
         ->and($config->password)->toBe('SECRET_PASSWORD')
         ->and($config->port)->toBe(700)
-        ->and($config->timeout)->toBe(30)
-        ->and($config->verifyPeer)->toBeFalse()
-        ->and($config->verifyPeerName)->toBeFalse()
-        ->and($config->allowSelfSigned)->toBeTrue();
+        ->and($config->timeout)->toBe(30);
 });
 
 test('FredConfig can be instantiated from array', function () {
@@ -29,9 +26,6 @@ test('FredConfig can be instantiated from array', function () {
         'passphrase' => 'KEY_PASS',
         'port' => 7000,
         'timeout' => 60,
-        'verify_peer' => true,
-        'verify_peer_name' => true,
-        'allow_self_signed' => false,
     ]);
 
     expect($config->host)->toBe('epp.example.tz')
@@ -41,8 +35,5 @@ test('FredConfig can be instantiated from array', function () {
         ->and($config->privateKey)->toBe('/path/to/key.pem')
         ->and($config->passphrase)->toBe('KEY_PASS')
         ->and($config->port)->toBe(7000)
-        ->and($config->timeout)->toBe(60)
-        ->and($config->verifyPeer)->toBeTrue()
-        ->and($config->verifyPeerName)->toBeTrue()
-        ->and($config->allowSelfSigned)->toBeFalse();
+        ->and($config->timeout)->toBe(60);
 });

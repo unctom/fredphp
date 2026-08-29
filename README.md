@@ -32,7 +32,6 @@ $config = new FredConfig(
     certificate: '/path/to/epp-client-cert.pem',
     privateKey: '/path/to/epp-client-key.pem',
     port: 700,
-    verifyPeer: false,
 );
 
 // Initialize SDK

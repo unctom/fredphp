@@ -13,9 +13,6 @@ final readonly class FredConfig
         public ?string $passphrase = null,
         public int $port = 700,
         public int $timeout = 30,
-        public bool $verifyPeer = false,
-        public bool $verifyPeerName = false,
-        public bool $allowSelfSigned = true,
     ) {
     }
 
@@ -33,9 +30,6 @@ final readonly class FredConfig
             passphrase: $data['passphrase'] ?? null,
             port: (int) ($data['port'] ?? 700),
             timeout: (int) ($data['timeout'] ?? 30),
-            verifyPeer: (bool) ($data['verifyPeer'] ?? $data['verify_peer'] ?? false),
-            verifyPeerName: (bool) ($data['verifyPeerName'] ?? $data['verify_peer_name'] ?? false),
-            allowSelfSigned: (bool) ($data['allowSelfSigned'] ?? $data['allow_self_signed'] ?? true),
         );
     }
 }
